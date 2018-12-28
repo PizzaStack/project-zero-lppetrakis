@@ -1,6 +1,7 @@
 package com.banking.BankingApp;
 
 import java.sql.*;
+import java.util.Scanner;
 
 /**
  * Hello world!
@@ -11,62 +12,119 @@ public class App {
 		Login login = new Login();
 		Menu menu = new Menu();
 		int input = 0;
+		dbTransaction dbTrans = new dbTransaction(login);
 
-		while (input != -1) {
+		while (input != 7) {
 			menu.printMainMenu();
+			Scanner scanner = new Scanner(System.in);
+			int options = scanner.nextInt();
+			System.out.println(options);
 			// TODO read input
-			input = 1;
+			input = options;
+
 			if (input == 1) {
-				while (input != -1) {
 
-					int priviledges = 1;
-					if (priviledges == 1) {
-						while (input != -1) {
+				// login loop
+				System.out.println("Login Selected");
+				
+				int privileges = 0;
+				do {
+					System.out.println("Enter Username: ");
+					String username = scanner.next();
+					System.out.println("User: " + username);
+					System.out.println("Enter Password: ");
+					String password = scanner.next();
+					privileges = dbTrans.login(username, password);
+					//dbTrans.login(username,password);
+				} while (privileges == 0);
+				
+				
+				//if no account, apply
+
+				
+				System.out.println("Auto Application: jake, jenny");
+				dbTrans.apply("jake", "jenny");
+				
+				//dbTrans.approveApplication("jake");
+
+				while (input != 7) {
+
+					
+					switch (privileges) {
+					case 1:// admin
+						while (input != 7) {// privileges 1 is admin
 							menu.printAdminMenu();
+							input = scanner.nextInt();
+							System.out.println("Option chosen: " + input);
+							// TODO switch input
+							// TODO call db transaction on input
+						}
+						input = 1;
+					case 2:// employee
+						while (input != 7) {
+							menu.printEmployeeMenu();
+							input = scanner.nextInt();
+							System.out.println("Option chosen: " + input);
 							// TODO read input, net still not working
 							// TODO switch input
 							// TODO call db transaction on input
+						}
+						input = 1;
+					case 3:
+						if (privileges == 3) {// privileges
+							while (input != 7) {
+								menu.printUserMenu();
+								input = scanner.nextInt();
+								System.out.println("Option chosen: " + input);
+								// TODO read input, net still not working
+								// TODO switch input
+								// TODO call db transaction on input
+							}
+							input = 1;
 						}
 
-					}
-					priviledges = 2;
-					if (priviledges == 2) {
-						while (input != -1) {
-							menu.printEmployeeMenu();
-							// TODO read input, net still not working
-							// TODO switch input
-							// TODO call db transaction on input
-						}
-					}
-					priviledges = 3;
-					if (priviledges == 3) {
-						while (input != -1) {
-							menu.printUserMenu();
-							// TODO read input, net still not working
-							// TODO switch input
-							// TODO call db transaction on input
-						}
 					}
 					// TODO read input
 					// TODO DB transaction
-					input = -1;
+					input = 7;
 				}
 			}
-			if (input == 2) {
-				while (input != -1) {
-					// TODO internet busted, can't find correct read syntax, do in morning
-					// register for account
-					// TODO read username
-					// TODO read password
-					// TODO check db for password
-					// TODO if already in db, print need new username
-					// TODO if not in db, post registration success and add to db
+
+			if (input == 2) {// register user and add him to the users table
+				while (input != 7) {
+					System.out.println("Register selected.");
+					System.out.println("Input User Name: ");
+					// TODO check username doesn't already exist
+					// TODO if exists, loop back
+					String confirmPass;
+					String username = scanner.next();
+					String password;
+					System.out.println("Username chosen: " + username);
+
+					do {
+						System.out.println("Input Password: ");
+						confirmPass = scanner.next();
+						System.out.println(confirmPass);
+						System.out.println("Reinput Password: ");
+						password = scanner.next();
+						System.out.println(password);
+//						System.out.println(password.equals(confirmPass));
+					} while (!password.equals(confirmPass));
+					dbTrans.register(username, password/* , dbTrans */);
+					// if (!select username from users where exists (select username from users
+					// where username = username))
+					// insert into users values(username, password,,1);
+					// else
+					// reinput username
+					input = 7;
+
 				}
 
 			}
 
-			input = -1;
+//			input = 7;
 		}
+		System.out.println("Exiting...");
 
 		try
 
@@ -84,7 +142,6 @@ public class App {
 			Connection db = DriverManager.getConnection(url, username, password);
 			Statement st = db.createStatement();
 			ResultSet rs = st.executeQuery("SELECT * FROM users");
-//            st.executeQuery("insert into users values('default2', 'password2', 1, 0)");
 
 			while (rs.next()) {
 				System.out.print("Column 1 returned ");
